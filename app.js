@@ -1,8 +1,9 @@
 var app = {
   init: function() {
-    $('#start-button').on('click', app.startGame);
-    app.buildHTML();
-    $('#restart-button').on('click', app.restartGame);
+    $('#timer').hide();
+    $('.retry-button').hide();
+    $('.start-button').on('click', app.startGame);
+    $('.restart-button, .retry-button').on('click', app.restartGame);
   },
   buildHTML: function() {
     var cardsArray = [
@@ -56,7 +57,7 @@ var app = {
       },
     ];
 
-    var gameGrid = cardsArray.concat(cardsArray).sort(function () {
+    var gameTray = cardsArray.concat(cardsArray).sort(function () {
       return 0.5 - Math.random();
     });
 
@@ -68,11 +69,11 @@ var app = {
     var delay = 1200;
 
     var game = document.getElementById('game');
-    var grid = document.createElement('section');
-    grid.setAttribute('class', 'grid');
-    game.appendChild(grid);
+    var tray = document.createElement('section');
+    tray.setAttribute('class', 'tray');
+    game.appendChild(tray);
 
-    gameGrid.forEach(function (item) {
+    gameTray.forEach(function (item) {
       var name = item.name,
           img = item.img;
 
@@ -88,7 +89,7 @@ var app = {
       back.classList.add('back');
       back.style.backgroundImage = 'url(' + img + ')';
 
-      grid.appendChild(card);
+      tray.appendChild(card);
       card.appendChild(front);
       card.appendChild(back);
     });
@@ -112,7 +113,7 @@ var app = {
       });
     };
 
-    grid.addEventListener('click', function (event) {
+    tray.addEventListener('click', function (event) {
 
       var clicked = event.target;
 
@@ -140,24 +141,58 @@ var app = {
         previousTarget = clicked;
       }
 
+      var modal = document.getElementById('myModal');
+      var span = document.getElementsByClassName("close")[0];
+      span.onclick = function() {
+      modal.style.display = "none";
+      }
+
       if (pairFound === 12) {
         setTimeout(function() {
           $('#myModal').show();
+          $('.modal-result').text("Vous avez gagné !");
         }, 1000);
+
+        setTimeout($('#progress-bar').stop(), 1000);
       }
     });
   },
   startGame: function(evt) {
+    app.buildHTML();
+
+    $('#rules').hide();
+    $('#timer').show();
+    $('.retry-button').show();
+
+    $('#progress-bar').animate(
+      { width: "100%" }, 90 * 1000,
+    );
+
+    setTimeout(function() {
+      if ($('#progress-bar').css("width", "100%")) {
+        $('#myModal').show();
+        $('.modal-result').text("Vous avez perdu ! Le temps est écoulé.");
+      };
+    }, 90 * 1000);
+
+    var modal = document.getElementById('myModal');
+    var span = document.getElementsByClassName("close")[0];
+    span.onclick = function() {
+    modal.style.display = "none";
+    }
+
     var clicked = event.target;
+
     if (clicked.parentNode.classList.contains('card')) {
       return;
     }
-    $('#start-button').hide();
+
+    $('.start-button').hide();
+
     $('.card').css("opacity", "1");
   },
   restartGame: function(evt) {
     window.location.reload();
-    app.startGame();
   }
 };
 
